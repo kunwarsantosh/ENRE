@@ -1,0 +1,273 @@
+---
+title: 'MSB350: Economics of Environment and Natural Resources'
+author: "Learning Team 4"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  editor_options: null
+  chunk_output_type: console
+  pdf_document: default
+---
+
+
+```{r global-options, include=TRUE, results=TRUE, cache =TRUE}
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE,
+                      message = FALSE, echo = FALSE,
+                      dpi = 180, fig.width = 8, fig.width = 5)
+library(tidyverse)
+library(ggplot2)
+library(sandwich)
+library(stargazer)
+library(GGally)
+library(lme4)
+library(MASS)
+```
+
+##set working directory
+```{r, results = FALSE}
+setwd("C:/Users/santosh.kunwar01/Documents/R/RModels/ENRE")
+gc()
+rm(list = ls(all.names = TRUE))
+```
+##import data
+
+```{r, results=FALSE}
+library(haven)
+ENRE <- haven::read_sav("HHUiS_Norstat2016_English_GK.sav")
+
+
+
+```
+
+
+##explore data
+```{r, results=FALSE}
+ENRE
+```
+```{r}
+##library("writexl")
+##write_xlsx(ENRE,"ENRE.xlsx")
+```
+
+
+```{r}
+
+library(expss)
+expss::write_labelled_xlsx(
+ENRE,
+"ENRE1.xlsx",
+data_sheet = "data",
+dict_sheet = "dictionary",
+remove_repeated = FALSE,
+use_references = TRUE
+)
+
+
+
+```
+
+
+```{r, results= FALSE}
+#load expss
+library(expss)
+```
+
+
+
+```{r}
+
+ENRE$WTP_GR1C <- with(ENRE,
+                    ifelse(WTP_GR1==1,0,
+                           ifelse(WTP_GR1==2,50,
+                                  ifelse(WTP_GR1==3,100,
+                                         ifelse(WTP_GR1==4,150,
+                                                ifelse(WTP_GR1==5,250,
+                                                       ifelse(WTP_GR1==6,350,
+                    ifelse(WTP_GR1==7,500,
+                          ifelse(WTP_GR1==8,750,
+                                 ifelse(WTP_GR1==9,1000,
+                                        ifelse(WTP_GR1==10,1250,
+                                               ifelse(WTP_GR1==11,1500,
+                                                      ifelse(WTP_GR1==12,1750,
+                    ifelse(WTP_GR1==13,2000,
+                           ifelse(WTP_GR1==14,2500,
+                                  ifelse(WTP_GR1==15,3000,
+                                         ifelse(WTP_GR1==16,4000,
+                                                ifelse(WTP_GR1==17,4000,
+                                                       ifelse(WTP_GR1==18,5000,
+                      ifelse(WTP_GR1==19,envGr1_19_other,
+                             ENRE$WTP_GR1)
+                      )))))))))))))))))))
+ENRE$WTP_GR1C <- as.numeric(ENRE$WTP_GR1C)
+
+
+
+
+ENRE$WTP_GR2C <- with(ENRE,
+                    ifelse(WTP_GR2==1,0,
+                           ifelse(WTP_GR2==2,50,
+                                  ifelse(WTP_GR2==3,100,
+                                         ifelse(WTP_GR2==4,150,
+                                                ifelse(WTP_GR2==5,250,
+                                                       ifelse(WTP_GR2==6,350,
+                    ifelse(WTP_GR2==7,500,
+                          ifelse(WTP_GR2==8,750,
+                                 ifelse(WTP_GR2==9,1000,
+                                        ifelse(WTP_GR2==10,1250,
+                                               ifelse(WTP_GR2==11,1500,
+                                                      ifelse(WTP_GR2==12,1750,
+                    ifelse(WTP_GR2==13,2000,
+                           ifelse(WTP_GR2==14,2500,
+                                  ifelse(WTP_GR2==15,3000,
+                                         ifelse(WTP_GR2==16,4000,
+                                                ifelse(WTP_GR2==17,4000,
+                                                       ifelse(WTP_GR2==18,5000,
+                      ifelse(WTP_GR2==19,envGr2_19_other,
+                             ENRE$WTP_GR2)
+                      )))))))))))))))))))
+
+ENRE$WTP_GR2C <- as.numeric(ENRE$WTP_GR2C)
+
+ENRE$WTP_GR3C <- with(ENRE,
+                    ifelse(WTP_GR3==1,0,
+                           ifelse(WTP_GR3==2,50,
+                                  ifelse(WTP_GR3==3,100,
+                                         ifelse(WTP_GR3==4,150,
+                                                ifelse(WTP_GR3==5,250,
+                                                       ifelse(WTP_GR3==6,350,
+                    ifelse(WTP_GR3==7,500,
+                          ifelse(WTP_GR3==8,750,
+                                 ifelse(WTP_GR3==9,1000,
+                                        ifelse(WTP_GR3==10,1250,
+                                               ifelse(WTP_GR3==11,1500,
+                                                      ifelse(WTP_GR3==12,1750,
+                    ifelse(WTP_GR3==13,2000,
+                           ifelse(WTP_GR3==14,2500,
+                                  ifelse(WTP_GR3==15,3000,
+                                         ifelse(WTP_GR3==16,4000,
+                                                ifelse(WTP_GR3==17,4000,
+                                                       ifelse(WTP_GR3==18,5000,
+                      
+                    ifelse(WTP_GR3==19 && envGr3_19_other == "Vet ikke",5000,
+                             ifelse(WTP_GR3 == 19, envGr3_19_other,
+                             ENRE$WTP_GR3)
+                      ))))))))))))))))))))
+
+ENRE$WTP_GR3C <- as.numeric(ENRE$WTP_GR3C)
+
+
+ENRE$WTP_GR4C <- with(ENRE,
+                    ifelse(WTP_GR4==1,0,
+                           ifelse(WTP_GR4==2,50,
+                                  ifelse(WTP_GR4==3,100,
+                                         ifelse(WTP_GR4==4,150,
+                                                ifelse(WTP_GR4==5,250,
+                                                       ifelse(WTP_GR4==6,350,
+                    ifelse(WTP_GR4==7,500,
+                          ifelse(WTP_GR4==8,750,
+                                 ifelse(WTP_GR4==9,1000,
+                                        ifelse(WTP_GR4==10,1250,
+                                               ifelse(WTP_GR4==11,1500,
+                                                      ifelse(WTP_GR4==12,1750,
+                    ifelse(WTP_GR4==13,2000,
+                           ifelse(WTP_GR4==14,2500,
+                                  ifelse(WTP_GR4==15,3000,
+                                         ifelse(WTP_GR4==16,4000,
+                                                ifelse(WTP_GR4==17,4000,
+                                                       ifelse(WTP_GR4==18,5000,
+                      ifelse(WTP_GR4==19 && envGr4_19_other == "Vet ikke",5000,
+                             ifelse(WTP_GR4 == 19, envGr4_19_other,
+                             
+                             ENRE$WTP_GR4)
+                      ))))))))))))))))))))
+
+ENRE$WTP_GR4C <- as.numeric(ENRE$WTP_GR4C)
+
+```
+
+```{r}
+
+library(expss)
+expss::write_labelled_xlsx(
+ENRE,
+"ENRE2.xlsx",
+data_sheet = "data",
+dict_sheet = "dictionary",
+remove_repeated = FALSE,
+use_references = TRUE
+)
+
+
+
+```
+
+```{r}
+library(fitdistrplus)
+descdist(ENRE$WTP_GR1C, discrete = FALSE)
+```
+
+
+
+```{r}
+mean(ENRE$WTP_GR1C, na.omit = TRUE)
+```
+
+
+
+
+
+
+```{r, results=FALSE}
+expss::val_lab(ENRE$WTP_GR4C)
+```
+
+```{r}
+
+library(expss)
+
+expss::write_labelled_xlsx(
+    ENRE,
+  "ENRE1.xlsx",
+  data_sheet = "data",
+  dict_sheet = "dictionary",
+  remove_repeated = FALSE,
+  use_references = TRUE
+  )
+
+
+
+```
+
+
+
+```{r}
+Gr1 <- subset(ENRE,envGroup == "1",
+              select = c(
+               RESPID,
+                age,
+               gender,
+                County,
+               Region,
+                Q227_5,
+                Q227_6,
+                Q244,
+                Q245_1,
+                Q245_2,
+                Q245_3,
+                Q245_4,
+                Q245_5,
+                Q245_6,
+                Q245_7,
+                Q251_24,
+                Q258_5,
+                Q269_17))
+```
+
+
+```{r}
+expss::val_lab(ENRE$WTP_GR4)
+
+expss::val_lab(ENRE$WTP_GR2)
+```
